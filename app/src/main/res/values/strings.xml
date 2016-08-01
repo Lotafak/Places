@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Places</string>
+    <string name="facebook_app_id">1579283735705463</string>
+    <string name="fb_login_protocol_scheme">fb1579283735705463</string>
+    <string name="title_activity_main">Map</string>
+    <string name="client_id">PB1WNTGDFNI0MQVZS0O0V2EPC3DTXM1ULT5N4WGCYNRIOCET</string>
+    <string name="client_secret">PHN4FQUIJMZBL1ODPTIET5AIJ44IV43Y1C3HV32A4YXY4QLP</string>
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
+    <string name="log_out">Log out</string>
+    <string name="log_in_message">Log in Places App !</string>
+    <string name="location_dialog_title">Choose location source:</string>
+    <string name="drawer_open_title">Your Places</string>
+    <string name="change_localization_button_title">Change localization</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

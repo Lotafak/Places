@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "431530165784",
+    "project_id": "firebase-places"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:431530165784:android:fdc08429953baa60",
+        "android_client_info": {
+          "package_name": "com.patrykk.places"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "431530165784-ju17oisu5fe96ih2p5onucq2eqbmlo31.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.patrykk.places",
+            "certificate_hash": "D681991539C027751AB27786BA9D1668E12C8C31"
+          }
+        },
+        {
+          "client_id": "431530165784-m9ok07bdfd2ljd0qudpb6fghk5a1u7rg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCysdcS2-57fq4rel20hlYhZYGsoIatk3k"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
