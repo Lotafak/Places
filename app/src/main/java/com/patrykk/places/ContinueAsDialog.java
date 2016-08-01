@@ -7,24 +7,24 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
 
-// TODO:
-public class ContinueAsDialog extends Fragment {
+public class ContinueAsDialog extends android.support.v4.app.DialogFragment implements View.OnClickListener {
     private static final String USERS_NAME = "name";
 
     private String usersName;
 
-    private OnFragmentInteractionListener mListener;
+    private OnContinueAsDialogClicked mListener;
 
-    public interface OnFragmentInteractionListener {
-         boolean continueAsLogged();
+    public interface OnContinueAsDialogClicked {
+        void continueAsLogged(boolean yesNo);
     }
 
     public ContinueAsDialog() {
         // Required empty public constructor
     }
 
-    // TODO: Rename and change types and number of parameters
     public static ContinueAsDialog newInstance(String name) {
         ContinueAsDialog fragment = new ContinueAsDialog();
         Bundle args = new Bundle();
@@ -45,7 +45,46 @@ public class ContinueAsDialog extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_continue_as_dialog, container, false);
+        View view = inflater.inflate(R.layout.fragment_continue_as_dialog, container, false);
+
+        Button mButtonYes = (Button) view.findViewById(R.id.button_yes);
+        Button mButtonNo = (Button) view.findViewById(R.id.button_no);
+
+        mButtonYes.setOnClickListener(this);
+        mButtonNo.setOnClickListener(this);
+
+        TextView titleView = (TextView) getDialog().findViewById(android.R.id.title);
+        titleView.setSingleLine(false);
+        String title = "Do you want to continue as " + usersName + " ?";
+        titleView.setText(title);
+
+        return view;
     }
 
+    @Override
+    public void onClick(View view) {
+        dismiss();
+        switch (view.getId()) {
+            case R.id.button_yes:
+                this.mListener.continueAsLogged(true);
+                break;
+            case R.id.button_no:
+                this.mListener.continueAsLogged(false);
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        try {
+            this.mListener = (OnContinueAsDialogClicked) context;
+        } catch (final ClassCastException e) {
+            throw new ClassCastException(context.toString()
+                    + " must implement OnContinueAsDialogClicked interface");
+        }
+    }
 }

@@ -40,6 +40,11 @@ public class Constants {
     public static final String LOCATION_DIALOG_TAG = "LOCATION_DIALOG_TAG";
 
     /**
+     * Intents continue as dialog tag
+     */
+    public static final String CONTINUE_AS_TAG = "CONTINUE_AS_TAG";
+
+    /**
      * Users chosen localization source - last known device location
      */
     public static final String LOCATION_DEVICE = "device";
@@ -53,17 +58,6 @@ public class Constants {
      * Users chosen localization source - facebook "city" location
      */
     public static final String LOCATION_FACEBOOK = "facebook";
-
-    /**
-     * Google account log out tag
-     */
-    public static final String GOOGLE_LOG_OUT = "google_log_out";
-
-    /**
-     * Code to mark intent as google account log in
-     */
-    public static final int GOOGLE_LOG_OUT_CODE = 11;
-
 
     /**
      * Code to mark intent as google account sin out

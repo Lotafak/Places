@@ -19,7 +19,9 @@ import com.facebook.FacebookSdk;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
+import com.facebook.Profile;
 import com.facebook.internal.CallbackManagerImpl;
+import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.Auth;
@@ -36,7 +38,8 @@ import java.util.Arrays;
 
 public class LoginActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
-        View.OnClickListener {
+        View.OnClickListener,
+        ContinueAsDialog.OnContinueAsDialogClicked {
 
     private LoginButton mFbLoginButton;
     private SignInButton mGoogleSignInButton;
@@ -69,29 +72,12 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 .addApi(Auth.GOOGLE_SIGN_IN_API, mGoogleSignInOptions)
                 .build();
 
-        // TODO: If user is already logged then user can continue with this account
-//        if (AccessToken.getCurrentAccessToken() != null) {
-//            new GraphRequest(AccessToken.getCurrentAccessToken(),
-//                    "me",
-//                    null,
-//                    HttpMethod.GET,
-//                    new GraphRequest.Callback() {
-//                        public void onCompleted(GraphResponse graphResponse) {
-//                            if (graphResponse.getError() != null) {
-//                                Log.e(Constants.LOG_TAG, graphResponse.getError().getErrorMessage());
-//
-//                                Toast.makeText(LoginActivity.this,
-//                                        "Failed to obtain facebook account details",
-//                                        Toast.LENGTH_SHORT).show();
-//                                return;
-//                            }
-//
-//
-//                        }
-//                    });
-//        }
+        if (AccessToken.getCurrentAccessToken() != null) {
+            Profile profile = Profile.getCurrentProfile();
+            ContinueAsDialog continueAsDialog = ContinueAsDialog.newInstance(profile.getName());
+            continueAsDialog.show(getSupportFragmentManager(), Constants.CONTINUE_AS_TAG);
+        }
     }
-
 
     /**
      * Callback for facebook account login
@@ -100,12 +86,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     FacebookCallback<LoginResult> facebookCallback = new FacebookCallback<LoginResult>() {
         @Override
         public void onSuccess(LoginResult loginResult) {
-
-            Intent intent = new Intent();
-            intent.setClass(getApplicationContext(), MainActivity.class);
-            intent.putExtra(Constants.LOGIN_TYPE, Constants.LOGIN_TYPE_FACEBOOK);
-            intent.putExtra(Constants.SHOW_LOCATION_DIALOG, true);
-            startActivity(intent);
+            goToMainAcitivityWithFacebook();
         }
 
         @Override
@@ -120,6 +101,14 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
             Toast.makeText(LoginActivity.this, "Oops! Something gone wrong", Toast.LENGTH_SHORT).show();
         }
     };
+
+    private void goToMainAcitivityWithFacebook() {
+        Intent intent = new Intent();
+        intent.setClass(getApplicationContext(), MainActivity.class);
+        intent.putExtra(Constants.LOGIN_TYPE, Constants.LOGIN_TYPE_FACEBOOK);
+        intent.putExtra(Constants.SHOW_LOCATION_DIALOG, true);
+        startActivity(intent);
+    }
 
     /**
      * Handles GoogleApiClient onConnectionFailed event
@@ -193,5 +182,15 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     @Override
     public void onBackPressed() {
         finishAffinity();
+    }
+
+    @Override
+    public void continueAsLogged(boolean yesNo) {
+        if(yesNo){
+            goToMainAcitivityWithFacebook();
+        }else{
+            LoginManager.getInstance().logOut();
+            Toast.makeText(LoginActivity.this, "You can log in now !", Toast.LENGTH_SHORT).show();
+        }
     }
 }
