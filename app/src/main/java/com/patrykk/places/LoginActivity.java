@@ -1,9 +1,7 @@
 package com.patrykk.places;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -16,9 +14,6 @@ import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
-import com.facebook.GraphRequest;
-import com.facebook.GraphResponse;
-import com.facebook.HttpMethod;
 import com.facebook.Profile;
 import com.facebook.internal.CallbackManagerImpl;
 import com.facebook.login.LoginManager;
@@ -31,52 +26,69 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
 
 import java.util.Arrays;
 
-public class LoginActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
+/**
+ * Login page activity is the first page user will see. Here the user can log in with either
+ * Facebook or Google account
+ */
+public class LoginActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener,
         View.OnClickListener,
         ContinueAsDialog.OnContinueAsDialogClicked {
 
-    private LoginButton mFbLoginButton;
     private SignInButton mGoogleSignInButton;
     private CallbackManager mCallbackManager;
-    private GoogleSignInOptions mGoogleSignInOptions;
     private static GoogleApiClient mGoogleApiClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        FacebookSdk.sdkInitialize(getApplicationContext());
-        mCallbackManager = CallbackManager.Factory.create();
+        initializeFacebookApi();
 
-        setContentView(R.layout.activity_login);
+        initializeGoogleApi();
 
-        mFbLoginButton = (LoginButton) findViewById(R.id.facebookLoginButton);
-        mFbLoginButton.setReadPermissions(Arrays.asList("user_location", "public_profile"));
-        mFbLoginButton.registerCallback(mCallbackManager, facebookCallback);
+        /** If user is logged in already with facebook account give user opportunity to use
+            this account within the app */
+        if (AccessToken.getCurrentAccessToken() != null) {
+            Profile profile = Profile.getCurrentProfile();
+            ContinueAsDialog continueAsDialog = ContinueAsDialog.newInstance(profile.getName());
+            continueAsDialog.show(getSupportFragmentManager(), Constants.CONTINUE_AS_TAG);
+        }
+    }
 
+    /**
+     * Initialize Google sign in button and creates google client
+     */
+    private void initializeGoogleApi() {
         mGoogleSignInButton = (SignInButton) findViewById(R.id.googleLoginButton);
         mGoogleSignInButton.setOnClickListener(this);
 
         // Configure Sign-in to request User ID, email and basic profile (provided by DEFAULT_SIGN_IN)
-        mGoogleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        GoogleSignInOptions mGoogleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .build();
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, mGoogleSignInOptions)
                 .build();
+    }
 
-        if (AccessToken.getCurrentAccessToken() != null) {
-            Profile profile = Profile.getCurrentProfile();
-            ContinueAsDialog continueAsDialog = ContinueAsDialog.newInstance(profile.getName());
-            continueAsDialog.show(getSupportFragmentManager(), Constants.CONTINUE_AS_TAG);
-        }
+    /**
+     * Initialize Facebook login button, register callbacks for button click events,
+     * facebook api is set to request location and public profile from user
+     */
+    private void initializeFacebookApi() {
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        mCallbackManager = CallbackManager.Factory.create();
+
+        setContentView(R.layout.activity_login);
+
+        LoginButton mFbLoginButton = (LoginButton) findViewById(R.id.facebookLoginButton);
+        mFbLoginButton.setReadPermissions(Arrays.asList("user_location", "public_profile"));
+        mFbLoginButton.registerCallback(mCallbackManager, facebookCallback);
     }
 
     /**
@@ -86,7 +98,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     FacebookCallback<LoginResult> facebookCallback = new FacebookCallback<LoginResult>() {
         @Override
         public void onSuccess(LoginResult loginResult) {
-            goToMainAcitivityWithFacebook();
+            goToMainActivityWithFacebook();
         }
 
         @Override
@@ -102,7 +114,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         }
     };
 
-    private void goToMainAcitivityWithFacebook() {
+    private void goToMainActivityWithFacebook() {
         Intent intent = new Intent();
         intent.setClass(getApplicationContext(), MainActivity.class);
         intent.putExtra(Constants.LOGIN_TYPE, Constants.LOGIN_TYPE_FACEBOOK);
@@ -125,18 +137,14 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.googleLoginButton:
-                signIn();
+                Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+                startActivityForResult(signInIntent, Constants.GOOGLE_SIGN_IN_CODE);
                 break;
         }
     }
 
-    private void signIn() {
-        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
-        startActivityForResult(signInIntent, Constants.GOOGLE_SIGN_IN_CODE);
-    }
-
     /**
-     * Result handling for both loging with Google acc and Facebook acc
+     * Result handling for both logging with Google acc and Facebook acc
      * depends on request code sent with intent
      */
     @Override
@@ -150,6 +158,11 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         }
     }
 
+    /**
+     * If logging in is successful user is sent to main window
+     *
+     * @param result Google account sign in result
+     */
     private void handleGoogleSignInResult(GoogleSignInResult result) {
         Log.d(Constants.LOG_TAG, "handleSignInResult: " + result.isSuccess());
         if (result.isSuccess()) {
@@ -166,15 +179,6 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         }
     }
 
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
     /**
      * Prevents user to go back to MainActivity after logging out
      * Back button now quits the app
@@ -184,10 +188,16 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         finishAffinity();
     }
 
+    /**
+     * Implementation of Interface method from ContinueAsDialog class
+     * Handles information sends from dialog buttons click
+     *
+     * @param yesNo user wants to keep logged in (true) or wants to change account (false)
+     */
     @Override
     public void continueAsLogged(boolean yesNo) {
         if(yesNo){
-            goToMainAcitivityWithFacebook();
+            goToMainActivityWithFacebook();
         }else{
             LoginManager.getInstance().logOut();
             Toast.makeText(LoginActivity.this, "You can log in now !", Toast.LENGTH_SHORT).show();
