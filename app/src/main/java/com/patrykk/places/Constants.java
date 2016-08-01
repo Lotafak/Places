@@ -63,4 +63,9 @@ public class Constants {
      * Code to mark intent as google account sin out
      */
     public static final int GOOGLE_SIGN_IN_CODE = 10;
+
+    /**
+     * Code to mark intent as request for location permission
+     */
+    public static final int PERMISSION_REQUEST_LOCATION_CODE = 20;
 }

@@ -1,10 +1,18 @@
 package com.patrykk.places;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.location.Address;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -48,8 +56,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private ActionBarDrawerToggle mDrawerToggle;
     private String mActivityTitle;
     private String mLoginType;
-    private LatLng mLatLng;
     private GoogleApiClient mGoogleApiClient;
+    private LocationManager locationManager;
+    private Location location;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,8 +103,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             //noinspection ConstantConditions
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setHomeButtonEnabled(true);
-        }catch (NullPointerException e )
-        {
+        } catch (NullPointerException e) {
             Toast.makeText(MainActivity.this, "Oops, something went wrong!", Toast.LENGTH_SHORT).show();
             finishAffinity();
         }
@@ -279,7 +287,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 // TODO
                 break;
             case Constants.LOCATION_GPS:
-                // TODO
+                handleGpsLocation();
                 break;
             default:
                 Log.e(Constants.LOG_TAG, "Incorrect location string");
@@ -288,9 +296,63 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     /**
+     * Creates locationManager object, checks permissions, request permissions if not granted
+     * and checks if location is enabled
+     */
+    private void handleGpsLocation() {
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this,
+                android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    Constants.PERMISSION_REQUEST_LOCATION_CODE);
+            return;
+        }
+        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            processLocation();
+        } else {    // If not go to settings
+            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            startActivity(intent);
+        }
+    }
+
+    /**
+     * Callback for the result from requesting permissions. This method is invoked for every call on
+     * {@param permissions}
+     *
+     * @param requestCode  code passed to {@link #requestPermissions(String[], int)}
+     * @param permissions  The requested permissions. Never null.
+     * @param grantResults The grant results for the corresponding permissions which is either
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == Constants.PERMISSION_REQUEST_LOCATION_CODE) {
+
+            if (permissions.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(MainActivity.this, "Access granted", Toast.LENGTH_SHORT).show();
+
+                processLocation();
+            }
+        }
+    }
+
+    /**
+     * Invoked after checking permissions and provider availability.
+     * Gets location from GPS and passes Address object to {@link #setLocation(Address)}
+     */
+    private void processLocation() {
+        location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        setLocation(LocalizationConverter.ToAddress(location, this));
+    }
+
+    /**
      * Handles facebook location as a users location
+     * Invoked by {@link #onLocationChosen(String)}
      * Invokes async task for users location with GraphRequest object and sets location on map when
-     * finished and response obtain successfully
+     * finished and response was obtained successfully
      */
     private void handleFacebookLocation() {
         Bundle bundle = new Bundle();
@@ -313,27 +375,52 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         }
 
                         // Converts response to LatLng object
-                        mLatLng = GraphResponseToLocationConverter.ToAddress(response, getApplicationContext());
-                        assert mLatLng != null;
-                        Log.d(Constants.LOG_TAG, mLatLng.latitude + ", " + mLatLng.longitude);
-                        setLocation(mLatLng);
+                        Address address = LocalizationConverter.ToAddress(response, getApplicationContext());
+                        assert address != null;
+                        Log.d(Constants.LOG_TAG, address.getLatitude() + ", " + address.getLongitude());
+                        setLocation(address);
                     }
                 }
         ).executeAsync();
     }
 
     /**
-     * Add marker in users chosen location on the map and zoom to it
+     * Add marker in users chosen location on the map, sets title and zoom to it
      *
-     * @param latLng location parameter (Latitude, Longitude)
+     * @param address object containing information about localization
      */
-    private void setLocation(LatLng latLng) {
-        mMap.addMarker(new MarkerOptions().position(latLng));
+    private void setLocation(Address address) {
+        mMap.clear();
+
+        LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
+
+        mMap.addMarker(new MarkerOptions().position(latLng).title(formatAddress(address)));
         CameraPosition cp = new CameraPosition.Builder()
                 .target(latLng)
                 .zoom(15)
                 .build();
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cp));  // Zoom level: min 2.0 - whole world, max 21.0
+    }
+
+    /**
+     * Format address object for setting google maps marker title
+     * Method checks which object information are available (not null) and return title based on it
+     *
+     * @param address object containing information about localization
+     * @return formatted string
+     */
+    private String formatAddress(Address address) {
+        if (address.getCountryName() != null) {
+            if (address.getThoroughfare() != null) {
+                if (address.getSubThoroughfare() != null)
+                    return address.getThoroughfare() + " " + address.getSubThoroughfare() + ", " + address.getCountryName();
+                else
+                    return address.getThoroughfare() + ", " + address.getCountryName();
+            } else if (address.getLocality() != null)
+                return address.getLocality() + ", " + address.getCountryName();
+            return address.getCountryName();
+        }
+        return "Undefined";
     }
 
     /**
