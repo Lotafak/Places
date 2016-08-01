@@ -62,6 +62,7 @@ public class LocalizationConverter {
 
         } catch (IOException e) {
             Log.e(Constants.LOG_TAG, e.toString());
+            Toast.makeText(context, "Can't get location. Check internet connection", Toast.LENGTH_SHORT).show();
             return null;
         }
 

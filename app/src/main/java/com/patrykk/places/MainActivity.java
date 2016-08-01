@@ -345,7 +345,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      */
     private void processLocation() {
         location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        setLocation(LocalizationConverter.ToAddress(location, this));
+        Address address = LocalizationConverter.ToAddress(location, this);
+        if (address != null)
+            setLocation(address);
     }
 
     /**
