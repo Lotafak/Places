@@ -34,6 +34,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -42,12 +43,13 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.Locale;
+
 /**
  * MainActivity is the Main Window of the app, here we have Google Maps, Foursquare search and result,
  * toolbar for logging out and for choosing location source.
  */
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
-        OnMapReadyCallback,
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback,
         ChooseLocationDialog.OnLocationChosenListener,
         GoogleApiClient.OnConnectionFailedListener {
 
@@ -160,10 +162,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
         if (mDrawerToggle.onOptionsItemSelected(item))
             return true;
-
 
         switch (item.getItemId()) {
             case R.id.change_localization_button:
@@ -185,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private void logOut() {
         switch (mLoginType) {
             case Constants.LOGIN_TYPE_GOOGLE:
-                handleGoogleLogOut();
+                createAndConnectToGoogleApiClient(new GoogleLogOutCallbackHandler());
                 break;
 
             case Constants.LOGIN_TYPE_FACEBOOK:
@@ -210,47 +210,33 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     /**
-     * Logs out user from Google account
-     * Creates GoogleApiClient object with connection to Google Sign in services
-     * Google documentation says that connecting to services again in each activity is lightweight
-     * operation and it's recommended to handle it like this
+     * Handles {@link GoogleApiClient} callback to logs out user from Google services and
+     * sends user to LoginActivity. Sets by
+     * {@link #createAndConnectToGoogleApiClient(GoogleApiClient.ConnectionCallbacks)}
      */
-    private void handleGoogleLogOut() {
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, this)
-                .addApi(Auth.GOOGLE_SIGN_IN_API)
-                .addConnectionCallbacks(this)   // sets
-                .build();
-        mGoogleApiClient.connect();
-    }
+    public class GoogleLogOutCallbackHandler implements GoogleApiClient.ConnectionCallbacks {
+        @Override
+        public void onConnected(@Nullable Bundle bundle) {
+            Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(new ResultCallback<Status>() {
+                @Override
+                public void onResult(@NonNull Status status) {
+                    if (status.isSuccess()) {
+                        Toast.makeText(MainActivity.this, "Logout Successful!", Toast.LENGTH_SHORT).show();
 
-    /**
-     * GoogleApiClient listener fires when client is connected and ready to use
-     * Logs out user from Google services and sends user to LoginActivity
-     *
-     * @param bundle extra information about connection
-     */
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(new ResultCallback<Status>() {
-            @Override
-            public void onResult(@NonNull Status status) {
-                if (status.isSuccess()) {
-                    Toast.makeText(MainActivity.this, "Logout Successful!", Toast.LENGTH_SHORT).show();
-
-                    Intent intent = new Intent();
-                    intent.setClass(MainActivity.this, LoginActivity.class);
-                    startActivity(intent);
-                } else {
-                    Toast.makeText(MainActivity.this, "Can't log out user, try again", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent();
+                        intent.setClass(MainActivity.this, LoginActivity.class);
+                        startActivity(intent);
+                    } else {
+                        Toast.makeText(MainActivity.this, "Can't log out user, try again", Toast.LENGTH_SHORT).show();
+                    }
                 }
-            }
-        });
-    }
+            });
+        }
 
-    @Override
-    public void onConnectionSuspended(int i) {
+        @Override
+        public void onConnectionSuspended(int i) {
 
+        }
     }
 
     @Override
@@ -284,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 handleFacebookLocation();
                 break;
             case Constants.LOCATION_DEVICE:
-                // TODO
+                createAndConnectToGoogleApiClient(new LastKnownLocationCallbackHandler());
                 break;
             case Constants.LOCATION_GPS:
                 handleGpsLocation();
@@ -292,6 +278,47 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             default:
                 Log.e(Constants.LOG_TAG, "Incorrect location string");
                 break;
+        }
+    }
+
+    /**
+     * Creates GoogleApiClient object with connection to both Google Sign in and Location services
+     * Google documentation says that connecting to services again in each activity separately is
+     * lightweight operation and it's recommended to handle it like this
+     *
+     * {@param callback callback handler}
+     */
+    private void createAndConnectToGoogleApiClient(GoogleApiClient.ConnectionCallbacks callback) {
+        if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
+            callback.onConnected(null);
+            return;
+        }
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, this)
+                .addApi(LocationServices.API)
+                .addApi(Auth.GOOGLE_SIGN_IN_API)
+                .addConnectionCallbacks(callback)   // sets
+                .build();
+        mGoogleApiClient.connect();
+    }
+
+    /**
+     * Handles {@link GoogleApiClient} Callbacks to obtain last known device localization.
+     * Set by {@link #createAndConnectToGoogleApiClient(GoogleApiClient.ConnectionCallbacks)}
+     */
+    private class LastKnownLocationCallbackHandler implements GoogleApiClient.ConnectionCallbacks {
+        @Override
+        public void onConnected(@Nullable Bundle bundle) {
+            Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+                    mGoogleApiClient);
+            if (mLastLocation != null) {
+                setLocation(LocalizationConverter.ToAddress(mLastLocation, MainActivity.this));
+            }
+        }
+
+        @Override
+        public void onConnectionSuspended(int i) {
+
         }
     }
 
@@ -348,6 +375,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         Address address = LocalizationConverter.ToAddress(location, this);
         if (address != null)
             setLocation(address);
+        else {
+            Address noGeocoderAddress = new Address(Locale.getDefault());
+            noGeocoderAddress.setLatitude(location.getLatitude());
+            noGeocoderAddress.setLongitude(location.getLongitude());
+            setLocation(noGeocoderAddress);
+        }
     }
 
     /**
@@ -392,11 +425,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * @param address object containing information about localization
      */
     private void setLocation(Address address) {
+        // Clear map from markers, polyline etc.
         mMap.clear();
 
+        // Get latitude and longitude from address object
         LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
 
         mMap.addMarker(new MarkerOptions().position(latLng).title(formatAddress(address)));
+
         CameraPosition cp = new CameraPosition.Builder()
                 .target(latLng)
                 .zoom(15)
@@ -409,7 +445,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * Method checks which object information are available (not null) and return title based on it
      *
      * @param address object containing information about localization
-     * @return formatted string
+     * @return formatted string or empty {@code String} if not fulfilling any condition
      */
     private String formatAddress(Address address) {
         if (address.getCountryName() != null) {
@@ -420,9 +456,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     return address.getThoroughfare() + ", " + address.getCountryName();
             } else if (address.getLocality() != null)
                 return address.getLocality() + ", " + address.getCountryName();
+
             return address.getCountryName();
         }
-        return "Undefined";
+
+        return "";
     }
 
     /**

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.net.ConnectivityManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -51,6 +52,11 @@ public class LocalizationConverter {
     }
 
     public static Address ToAddress(Location location, Context context) {
+        ConnectivityManager cm = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if(cm.getActiveNetworkInfo() == null ){
+            Toast.makeText(context, "Warning: No internet connection! Application will provide less information about localization", Toast.LENGTH_LONG).show();
+            return null;
+        }
         Geocoder geocoder = new Geocoder(context);
         try {
             List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
@@ -62,7 +68,7 @@ public class LocalizationConverter {
 
         } catch (IOException e) {
             Log.e(Constants.LOG_TAG, e.toString());
-            Toast.makeText(context, "Can't get location. Check internet connection", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Can't get location", Toast.LENGTH_SHORT).show();
             return null;
         }
 
