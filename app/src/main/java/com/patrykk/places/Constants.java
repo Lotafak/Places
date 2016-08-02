@@ -68,4 +68,10 @@ public class Constants {
      * Code to mark intent as request for location permission
      */
     public static final int PERMISSION_REQUEST_LOCATION_CODE = 20;
+
+    public static final String FOURSQUARE_REQUEST_CATEGORY = "foursquare_request_category";
+
+    public static final String FOURSQUARE_REQUEST_LATLNG = "foursquare_request_latlong";
+
+    public static final String FOURSQUARE_REQUEST = "foursquare_request";
 }

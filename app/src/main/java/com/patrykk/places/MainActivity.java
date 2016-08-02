@@ -13,6 +13,8 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -60,7 +62,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String mLoginType;
     private GoogleApiClient mGoogleApiClient;
     private LocationManager locationManager;
-    private Location location;
+    private Address mAddress;
+    private String mCategory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -371,10 +374,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
      * Gets location from GPS and passes Address object to {@link #setLocation(Address)}
      */
     private void processLocation() {
-        location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        Address address = LocalizationConverter.ToAddress(location, this);
-        if (address != null)
-            setLocation(address);
+        Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        mAddress = LocalizationConverter.ToAddress(location, this);
+        if (mAddress != null)
+            setLocation(mAddress);
         else {
             Address noGeocoderAddress = new Address(Locale.getDefault());
             noGeocoderAddress.setLatitude(location.getLatitude());
@@ -410,10 +413,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         }
 
                         // Converts response to LatLng object
-                        Address address = LocalizationConverter.ToAddress(response, getApplicationContext());
-                        assert address != null;
-                        Log.d(Constants.LOG_TAG, address.getLatitude() + ", " + address.getLongitude());
-                        setLocation(address);
+                        mAddress = LocalizationConverter.ToAddress(response, getApplicationContext());
+                        assert mAddress != null;
+                        Log.d(Constants.LOG_TAG, mAddress.getLatitude() + ", " + mAddress.getLongitude());
+                        setLocation(mAddress);
+
+                        Bundle bundle = new Bundle();
+                        bundle.putString(Constants.FOURSQUARE_REQUEST_CATEGORY, "arts");    // TODO: Hard coded category
+                        bundle.putString(Constants.FOURSQUARE_REQUEST_LATLNG, LocalizationConverter.AddressToQueryString(mAddress));
+
+                        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+                        FoursquareRequest fr = new FoursquareRequest();
+                        fr.setArguments(bundle);
+                        ft.add(fr, Constants.FOURSQUARE_REQUEST);
+                        ft.commit();
                     }
                 }
         ).executeAsync();

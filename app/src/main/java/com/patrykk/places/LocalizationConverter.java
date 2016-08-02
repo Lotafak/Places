@@ -74,4 +74,10 @@ public class LocalizationConverter {
 
         return null;
     }
+
+    public static String AddressToQueryString(Address address) {
+        String string = "";
+        string += address.getLatitude() + "," + address.getLongitude();
+        return string;
+    }
 }

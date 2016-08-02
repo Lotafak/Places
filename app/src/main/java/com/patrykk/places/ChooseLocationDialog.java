@@ -102,6 +102,7 @@ public class ChooseLocationDialog extends android.support.v4.app.DialogFragment 
         super.onAttach(context);
 
         try {
+            // If activity implements interface assign it to listener
             this.mListener = (OnLocationChosenListener) context;
         } catch (final ClassCastException e) {
             throw new ClassCastException(context.toString()
