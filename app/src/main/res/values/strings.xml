@@ -13,4 +13,36 @@
     <string name="drawer_open_title">Your Places</string>
     <string name="change_localization_button_title">Change localization</string>
     <string name="continue_as">Do you wan to continue as </string>
+    <string name="choose_category_button_title">Choose category</string>
+    <string name="choose_category_dialog_title">Choose category:</string>
+    <string name="log_out_button_title">"Log out from "</string>
+    <string name="yes">yes</string>
+    <string name="no">no</string>
+    <string name="no_localization_message">In order to use location services you need to enable it in settings. Do you want to go to settings in order to enable localization ?</string>
+    <string name="no_localization_title">Redirection</string>
+    <string name="not_specified">Not specified</string>
+    <string-array name="category_keys">
+        <item>food</item>
+        <item>drinks</item>
+        <item>coffee</item>
+        <item>shops</item>
+        <item>arts</item>
+        <item>outdoors</item>
+        <item>sights</item>
+        <item>trending</item>
+        <item>specials</item>
+        <item>topPicks</item>
+    </string-array>
+    <string-array name="category_values">
+        <item>Food</item>
+        <item>Drinks</item>
+        <item>Coffee</item>
+        <item>Shops &amp; service</item>
+        <item>Arts &amp; entertainment</item>
+        <item>Outdoors &amp; recreation</item>
+        <item>Sights to see</item>
+        <item>Trending</item>
+        <item>Specials</item>
+        <item>Recommended</item>
+    </string-array>
 </resources>

@@ -2,6 +2,7 @@ package com.patrykk.places;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -13,10 +14,10 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -53,7 +54,8 @@ import java.util.Locale;
  */
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback,
         ChooseLocationDialog.OnLocationChosenListener,
-        GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.OnConnectionFailedListener,
+        ChooseCategoryDialog.OnCategoryChosenListener{
 
     private GoogleMap mMap;
     private ListView mDrawerList;
@@ -64,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LocationManager locationManager;
     private Address mAddress;
     private String mCategory;
+    private boolean mFirstView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Shows dialog for choosing location if intent says to do it
         if (getIntent().getBooleanExtra(Constants.SHOW_LOCATION_DIALOG, false)) {
             showLocationDialog();
+            mFirstView = true;
         }
     }
 
@@ -99,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void initializeDrawerList() {
         mDrawerList = (ListView) findViewById(R.id.navigationList);
 
-        addDrawerItems();
+//        addDrawerItems();
 
         DrawerLayout mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mActivityTitle = getTitle().toString();
@@ -153,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
         // Depending on login type (Google, Facebook) sets proper button title
-        menu.getItem(1).setTitle("Log out from " + mLoginType);
+        menu.getItem(2).setTitle(getString(R.string.log_out_button_title) + mLoginType);
         return true;
     }
 
@@ -177,9 +181,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 logOut();
                 return true;
 
+            case R.id.change_category_button:
+                showCategoryDialog();
+
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void showCategoryDialog() {
+        ChooseCategoryDialog dialog = new ChooseCategoryDialog();
+        dialog.show(getSupportFragmentManager(), Constants.CATEGORY_DIALOG_TAG);
     }
 
     /**
@@ -210,6 +222,27 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Intent goToLoginActivityIntent = new Intent();
         goToLoginActivityIntent.setClass(this, LoginActivity.class);
         startActivity(goToLoginActivityIntent);
+    }
+
+    @Override
+    public void onCategoryChosen(String category) {
+        mCategory = category;
+
+        sendFoursquareRequest(mCategory);
+    }
+
+    private void sendFoursquareRequest(String category) {
+        Toast.makeText(MainActivity.this, category, Toast.LENGTH_SHORT).show();
+
+        Bundle bundle = new Bundle();
+        bundle.putString(Constants.FOURSQUARE_REQUEST_CATEGORY, category);
+        bundle.putString(Constants.FOURSQUARE_REQUEST_LATLNG, LocalizationConverter.AddressToQueryString(mAddress));
+
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        FoursquareRequest fr = new FoursquareRequest();
+        fr.setArguments(bundle);
+        ft.add(fr, Constants.FOURSQUARE_REQUEST);
+        ft.commit();
     }
 
     /**
@@ -341,9 +374,22 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             processLocation();
-        } else {    // If not go to settings
-            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-            startActivity(intent);
+        } else {    // If not aks if user wants to go to settings
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.no_localization_title)
+                    .setMessage(R.string.no_localization_message)
+                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    startActivity(intent);
+                }
+            }).setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.dismiss();
+                }
+            }).setIcon(android.R.drawable.ic_dialog_alert).show();
         }
     }
 
@@ -417,16 +463,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         assert mAddress != null;
                         Log.d(Constants.LOG_TAG, mAddress.getLatitude() + ", " + mAddress.getLongitude());
                         setLocation(mAddress);
-
-                        Bundle bundle = new Bundle();
-                        bundle.putString(Constants.FOURSQUARE_REQUEST_CATEGORY, "arts");    // TODO: Hard coded category
-                        bundle.putString(Constants.FOURSQUARE_REQUEST_LATLNG, LocalizationConverter.AddressToQueryString(mAddress));
-
-                        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-                        FoursquareRequest fr = new FoursquareRequest();
-                        fr.setArguments(bundle);
-                        ft.add(fr, Constants.FOURSQUARE_REQUEST);
-                        ft.commit();
                     }
                 }
         ).executeAsync();
@@ -451,6 +487,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .zoom(15)
                 .build();
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cp));  // Zoom level: min 2.0 - whole world, max 21.0
+
+        if (mFirstView)
+        {
+            showCategoryDialog();
+            mFirstView = false;
+        } else
+            sendFoursquareRequest(mCategory);
     }
 
     /**

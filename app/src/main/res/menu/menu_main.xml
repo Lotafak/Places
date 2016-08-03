@@ -3,6 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".MainActivity">
+
+    <item
+        android:id="@+id/change_category_button"
+        android:title="@string/choose_category_button_title"
+        app:showAsAction="ifRoom"
+        />
     <item
         android:id="@+id/change_localization_button"
         android:title="@string/change_localization_button_title"

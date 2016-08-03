@@ -21,18 +21,19 @@ import java.util.Arrays;
  */
 public class ChooseLocationDialog extends android.support.v4.app.DialogFragment implements AdapterView.OnItemClickListener {
 
-    /**
-     * Default non-parametric constructor required by DialogFragment base class
-     */
-    public ChooseLocationDialog() {
-    }
-
     // List with location keys
     ArrayList<String> mItemsKeys;
 
     // List with location values
     ArrayList<String> mItemsValues;
+
     ListView mListView;
+
+    /**
+     * Default non-parametric constructor required by DialogFragment base class
+     */
+    public ChooseLocationDialog() {
+    }
 
     /**
      * Filling items list with options depending on weather user is logged into FB or not
@@ -57,8 +58,8 @@ public class ChooseLocationDialog extends android.support.v4.app.DialogFragment 
      */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.choose_location_layout, container);
-        mListView = (ListView) view.findViewById(R.id.locationList);
+        View view = inflater.inflate(R.layout.fragment_choose_dialog, container);
+        mListView = (ListView) view.findViewById(R.id.list);
         getDialog().setTitle(getString(R.string.location_dialog_title));
         return view;
     }
@@ -69,7 +70,9 @@ public class ChooseLocationDialog extends android.support.v4.app.DialogFragment 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mListView.setAdapter(new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, mItemsValues));
+        mListView.setAdapter(new ArrayAdapter<>(getActivity(),
+                android.R.layout.simple_list_item_1,
+                mItemsValues));
         mListView.setOnItemClickListener(this);
     }
 

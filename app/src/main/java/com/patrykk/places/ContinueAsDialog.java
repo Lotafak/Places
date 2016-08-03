@@ -1,9 +1,7 @@
 package com.patrykk.places;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,7 +43,7 @@ public class ContinueAsDialog extends android.support.v4.app.DialogFragment impl
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_continue_as_dialog, container, false);
+        View view = inflater.inflate(R.layout.fragment_continue_as, container, false);
 
         Button mButtonYes = (Button) view.findViewById(R.id.button_yes);
         Button mButtonNo = (Button) view.findViewById(R.id.button_no);

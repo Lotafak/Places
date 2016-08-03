@@ -15,15 +15,22 @@ import com.android.volley.toolbox.DiskBasedCache;
 import com.android.volley.toolbox.HurlStack;
 import com.android.volley.toolbox.JsonObjectRequest;
 
-import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 public class FoursquareRequest extends android.support.v4.app.Fragment {
 
     private Context mContext;
     private RequestQueue mRequestQueue;
-    private FoursquareModel mFoursquareModel;
     private String mUrl = "https://api.foursquare.com/v2/venues/explore?";
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        mContext = context;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -40,35 +47,30 @@ public class FoursquareRequest extends android.support.v4.app.Fragment {
 
         // Start the queue
         mRequestQueue.start();
-
-        addFoursquareApiCredentials();
-    }
-
-    private void addFoursquareApiCredentials() {
-        String credentials = "";
-        credentials += "client_id=" + mContext.getResources().getString(R.string.client_id);
-        credentials += "&client_secret=" + mContext.getResources().getString(R.string.client_secret);
-        mUrl = mUrl.concat(credentials);
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-
-        mContext = context;
     }
 
     @Override
     public void onStart() {
         super.onStart();
 
-        makeRequest();
+        makeVenuesExploreRequest();
     }
 
-    // TODO: Handle request (parse data etc.)
-    public String makeRequest() {
+    /**
+     * Configures URL for making an exmplore request to Foursquare API and makes asynchronous
+     * {@link com.android.volley.toolbox.JsonRequest} request.
+     *
+     * @return {@link ArrayList} of type {@link FoursquareModel} with found venues (locations)
+     */
+    public String makeVenuesExploreRequest() {
+        // Add credentials to url
+        mUrl = addFoursquareApiCredentials(mContext.getResources().getString(R.string.client_id),
+                mContext.getResources().getString(R.string.client_secret));
+
+        // Add passed parameters to url
         Bundle bundle = getArguments();
         mUrl = addParameters(bundle);
+
         Log.d(Constants.LOG_TAG, mUrl);
 
         JsonObjectRequest jsonRequest = new JsonObjectRequest(Request.Method.GET,
@@ -77,18 +79,9 @@ public class FoursquareRequest extends android.support.v4.app.Fragment {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        try {
-                            JSONObject meta = response.getJSONObject("meta");
-                            int responseCode = (int)meta.get("code");
-                            if(responseCode == 200) {
-                                Log.d(Constants.LOG_TAG, "200");
-                                FoursquareParser fp = new FoursquareParser();
-                            }else {
-                                Log.e(Constants.LOG_TAG, meta.get("errorType") + ": " + meta.get("errorDetail"));
-                            }
-                        } catch (JSONException e) {
-                            Log.e(Constants.LOG_TAG, e.toString());
-                        }
+                        FoursquareParser foursquareParser = new FoursquareParser(mContext);
+                        ArrayList<FoursquareModel> foursquareModels = foursquareParser.ParseJSONObjectFoursquareExploreResponse(response);
+                        // TODO: Do something with recieved data
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -101,16 +94,41 @@ public class FoursquareRequest extends android.support.v4.app.Fragment {
         return null;
     }
 
+    /**
+     * Adds to request url required app credentials for non-logged Foursquare users.
+     * Comes first, before any others parameters
+     */
+    private String addFoursquareApiCredentials(String id, String secret) {
+        String credentials = "";
+        credentials += "client_id=" + id;
+        credentials += "&client_secret=" + secret;
+        return mUrl.concat(credentials);
+    }
+
+    /**
+     * Adds request parameters to url string
+     *
+     * @param parameters bundle containing latitude and longitude in string as XX.XX,YY.YY with
+     *                   foursquare_request_latlng and category name with foursquare_request_category
+     *                   tag.
+     * @return url with added parameters
+     */
     private String addParameters(Bundle parameters) {
-        String newUrl = mUrl;
-        newUrl += "&limit=30&sortByDistance=1&v=20160802";
+        String newUrl = "";
+
+        // Adding default parameters to url
+        newUrl += "&limit=2&sortByDistance=1&v=20160802";
+
+        // Obtaining parameters from passed bundle
         String latLng = parameters.getString(Constants.FOURSQUARE_REQUEST_LATLNG, "");
         String category = parameters.getString(Constants.FOURSQUARE_REQUEST_CATEGORY, "");
-        if(!latLng.equals(""))
-            newUrl += "&ll=" + latLng;
-        if(!category.equals(""))
-            newUrl += "&category=" + category;
 
-        return newUrl;
+        // Checking if parameters are empty string, if not, adding parameters to url
+        if (!latLng.equals(""))
+            newUrl += "&ll=" + latLng;
+        if (!category.equals(""))
+            newUrl += "&section=" + category;
+
+        return mUrl.concat(newUrl);
     }
 }

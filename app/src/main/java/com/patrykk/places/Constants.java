@@ -12,7 +12,7 @@ public class Constants {
     /**
      * Key for intents extra login type
      */
-    public static final String LOGIN_TYPE = "LOGIN_TYPE";
+    public static final String LOGIN_TYPE = "login_type";
 
     /**
      * Value of {@value LOGIN_TYPE} for facebook account login
@@ -35,14 +35,19 @@ public class Constants {
     public static final String SHOW_LOCATION_DIALOG = "loc_dialog";
 
     /**
-     * Intents location dialog tag
+     * Intents location type choose dialog tag
      */
-    public static final String LOCATION_DIALOG_TAG = "LOCATION_DIALOG_TAG";
+    public static final String LOCATION_DIALOG_TAG = "location_dialog_tag";
+
+    /**
+     * Intents category choose dialog tag
+     */
+    public static final String CATEGORY_DIALOG_TAG = "category_dialog_tag";
 
     /**
      * Intents continue as dialog tag
      */
-    public static final String CONTINUE_AS_TAG = "CONTINUE_AS_TAG";
+    public static final String CONTINUE_AS_TAG = "continue_as_tag";
 
     /**
      * Users chosen localization source - last known device location
@@ -69,9 +74,19 @@ public class Constants {
      */
     public static final int PERMISSION_REQUEST_LOCATION_CODE = 20;
 
+    /**
+     * Tag for passing category String with bundle to FoursquareRequest
+     */
     public static final String FOURSQUARE_REQUEST_CATEGORY = "foursquare_request_category";
 
+    /**
+     * Tag for passing latitude and longitude String with bundle to FoursquareRequest
+     * Latlng has to follow template: XX.XX,YY.YY
+     */
     public static final String FOURSQUARE_REQUEST_LATLNG = "foursquare_request_latlong";
 
+    /**
+     * Teg for making foursquare request
+     */
     public static final String FOURSQUARE_REQUEST = "foursquare_request";
 }
