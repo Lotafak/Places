@@ -12,19 +12,23 @@
         style="?android:attr/buttonBarButtonStyle"
         android:layout_width="wrap_content"
         android:layout_height="36dp"
+        android:layout_margin="8dp"
+        android:minWidth="64dp"
         android:padding="8dp"
         android:text="no"
-        android:textSize="16sp"
-        android:layout_margin="8dp" />
+        android:textSize="16sp" />
 
     <Button
         android:id="@+id/button_yes"
         style="?android:attr/buttonBarButtonStyle"
         android:layout_width="wrap_content"
         android:layout_height="36dp"
-        android:padding="8dp"
+        android:minWidth="64dp"
         android:text="yes"
+        android:textAlignment="center"
         android:textSize="16sp"
-        android:layout_margin="8dp"
-        android:textAlignment="center" />
+        android:padding="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="8dp" />
 </LinearLayout><!--</FrameLayout>-->
