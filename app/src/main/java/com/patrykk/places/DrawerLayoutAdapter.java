@@ -42,7 +42,7 @@ public class DrawerLayoutAdapter extends BaseAdapter {
         ViewHolder holder;
 
         if (view == null) {
-            view = mInflater.inflate(R.layout.list_foursquare_results, viewGroup, false);
+            view = mInflater.inflate(R.layout.foursquare_result_list_item, viewGroup, false);
 
             holder = new ViewHolder();
             holder.iconImageView = (ImageView) view.findViewById(R.id.foursquare_icon);
