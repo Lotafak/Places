@@ -1,4 +1,4 @@
-package com.patrykk.places;
+package com.patrykk.places.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -7,6 +7,9 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.patrykk.places.foursquare.FoursquareModel;
+import com.patrykk.places.R;
 
 import java.util.ArrayList;
 

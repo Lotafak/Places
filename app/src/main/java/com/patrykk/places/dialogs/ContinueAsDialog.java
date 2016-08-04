@@ -1,4 +1,4 @@
-package com.patrykk.places;
+package com.patrykk.places.dialogs;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.patrykk.places.R;
 
 public class ContinueAsDialog extends android.support.v4.app.DialogFragment implements View.OnClickListener {
     private static final String USERS_NAME = "name";

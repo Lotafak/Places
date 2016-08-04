@@ -1,4 +1,4 @@
-package com.patrykk.places;
+package com.patrykk.places.foursquare;
 
 /**
  * Model for Foursquare data

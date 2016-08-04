@@ -1,4 +1,4 @@
-package com.patrykk.places;
+package com.patrykk.places.activities;
 
 import android.Manifest;
 import android.content.Context;
@@ -21,7 +21,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -46,6 +45,14 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.patrykk.places.foursquare.FoursquareModel;
+import com.patrykk.places.foursquare.FoursquareRequest;
+import com.patrykk.places.foursquare.LocalizationConverter;
+import com.patrykk.places.R;
+import com.patrykk.places.adapters.DrawerLayoutAdapter;
+import com.patrykk.places.constants.Constants;
+import com.patrykk.places.dialogs.ChooseCategoryDialog;
+import com.patrykk.places.dialogs.ChooseLocationDialog;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -58,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         ChooseLocationDialog.OnLocationChosenListener,
         GoogleApiClient.OnConnectionFailedListener,
         ChooseCategoryDialog.OnCategoryChosenListener,
-        FoursquareRequest.OnRequestProcessedListener{
+        FoursquareRequest.OnRequestProcessedListener {
 
     private GoogleMap mMap;
     private DrawerLayout mDrawerLayout;

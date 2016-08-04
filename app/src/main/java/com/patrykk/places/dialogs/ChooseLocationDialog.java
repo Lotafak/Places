@@ -1,4 +1,4 @@
-package com.patrykk.places;
+package com.patrykk.places.dialogs;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -10,6 +10,9 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.facebook.AccessToken;
+import com.patrykk.places.activities.MainActivity;
+import com.patrykk.places.R;
+import com.patrykk.places.constants.Constants;
 
 import java.util.ArrayList;
 import java.util.Arrays;

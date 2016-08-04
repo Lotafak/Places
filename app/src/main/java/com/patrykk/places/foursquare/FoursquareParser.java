@@ -1,8 +1,12 @@
-package com.patrykk.places;
+package com.patrykk.places.foursquare;
 
 import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.patrykk.places.R;
+import com.patrykk.places.activities.MainActivity;
+import com.patrykk.places.constants.Constants;
 
 import org.json.JSONArray;
 import org.json.JSONException;

@@ -1,4 +1,4 @@
-package com.patrykk.places;
+package com.patrykk.places.foursquare;
 
 import android.content.Context;
 import android.location.Address;
@@ -9,7 +9,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.facebook.GraphResponse;
-import com.google.android.gms.maps.model.LatLng;
+import com.patrykk.places.constants.Constants;
 
 import org.json.JSONException;
 import org.json.JSONObject;

@@ -1,4 +1,4 @@
-package com.patrykk.places;
+package com.patrykk.places.dialogs;
 
 
 import android.content.Context;
@@ -12,6 +12,8 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import com.patrykk.places.R;
 
 // TODO: Documentation
 /**

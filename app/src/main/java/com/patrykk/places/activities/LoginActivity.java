@@ -1,9 +1,8 @@
-package com.patrykk.places;
+package com.patrykk.places.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -26,6 +25,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.patrykk.places.R;
+import com.patrykk.places.constants.Constants;
+import com.patrykk.places.dialogs.ContinueAsDialog;
 
 import java.util.Arrays;
 

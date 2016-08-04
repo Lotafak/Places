@@ -1,4 +1,4 @@
-package com.patrykk.places;
+package com.patrykk.places.foursquare;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -14,6 +14,8 @@ import com.android.volley.toolbox.BasicNetwork;
 import com.android.volley.toolbox.DiskBasedCache;
 import com.android.volley.toolbox.HurlStack;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.patrykk.places.R;
+import com.patrykk.places.constants.Constants;
 
 import org.json.JSONObject;
 
