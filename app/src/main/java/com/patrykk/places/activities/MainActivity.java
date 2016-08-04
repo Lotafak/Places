@@ -42,6 +42,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -228,8 +229,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void sendFoursquareRequest(String category) {
-        Toast.makeText(MainActivity.this, category, Toast.LENGTH_SHORT).show();
-
         Bundle bundle = new Bundle();
         bundle.putString(Constants.FOURSQUARE_REQUEST_CATEGORY, category);
         bundle.putString(Constants.FOURSQUARE_REQUEST_LATLNG, LocalizationConverter.AddressToQueryString(mAddress));
@@ -251,6 +250,23 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         DrawerLayoutAdapter adapter = new DrawerLayoutAdapter(this, list);
         mDrawerList.setAdapter(adapter);
         mDrawerLayout.openDrawer(GravityCompat.START);
+        addVenuesMarkers(list);
+    }
+
+    /**
+     * Adds venues (places) from list to map
+     * @param list {@link FoursquareModel} list of venues
+     */
+    private void addVenuesMarkers(ArrayList<FoursquareModel> list) {
+
+        // Iterate all venues
+        for(FoursquareModel fm : list) {
+            // Get latitude and longitude from current venue
+            LatLng latLng = new LatLng(fm.getLatitude(), fm.getLongitude());
+
+            // Add marker to map
+            mMap.addMarker(new MarkerOptions().position(latLng).alpha(0.7f).title(fm.getName()).snippet(fm.getFullAddress()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+        }
     }
 
     /**
@@ -353,7 +369,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private class LastKnownLocationCallbackHandler implements GoogleApiClient.ConnectionCallbacks {
         @Override
         public void onConnected(@Nullable Bundle bundle) {
-            Location mLastLocation = LocationServices
+            @SuppressWarnings("MissingPermission") Location mLastLocation = LocationServices
                     .FusedLocationApi
                     .getLastLocation(mGoogleApiClient);
             if (mLastLocation != null) {
@@ -429,7 +445,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
      * Gets location from GPS and passes Address object to {@link #setLocation(Address)}
      */
     private void processLocation() {
-        Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        @SuppressWarnings("MissingPermission") Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         mAddress = LocalizationConverter.ToAddress(location, this);
         if (mAddress != null)
             setLocation(mAddress);

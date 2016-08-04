@@ -10,7 +10,7 @@
     <string name="log_out">Log out</string>
     <string name="log_in_message">Log in Places App !</string>
     <string name="location_dialog_title">Choose location source:</string>
-    <string name="drawer_open_title">Your Places</string>
+    <string name="drawer_open_title">Places</string>
     <string name="change_localization_button_title">Change localization</string>
     <string name="continue_as">Do you wan to continue as </string>
     <string name="choose_category_button_title">Choose category</string>
