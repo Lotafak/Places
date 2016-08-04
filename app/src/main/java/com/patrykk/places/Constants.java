@@ -72,7 +72,7 @@ public class Constants {
     /**
      * Code to mark intent as request for location permission
      */
-    public static final int PERMISSION_REQUEST_LOCATION_CODE = 20;
+    public static final int REQUEST_PERMISSION_LOCATION_CODE = 20;
 
     /**
      * Tag for passing category String with bundle to FoursquareRequest

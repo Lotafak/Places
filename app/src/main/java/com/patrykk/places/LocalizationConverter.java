@@ -76,6 +76,10 @@ public class LocalizationConverter {
     }
 
     public static String AddressToQueryString(Address address) {
+        if(address == null){
+            Log.e(Constants.LOG_TAG, "address is null in AddressToQuesyString(Address address)");
+            return "";
+        }
         String string = "";
         string += address.getLatitude() + "," + address.getLongitude();
         return string;

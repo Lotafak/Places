@@ -42,9 +42,10 @@ public class FoursquareParser {
             JSONObject response = object.getJSONObject("response");
 
             // Get warning message if available and display it to user
-            JSONObject warning = response.getJSONObject("warning");
-            if (warning != null)
+            if(response.has("warning")){
+                JSONObject warning = response.getJSONObject("warning");
                 Toast.makeText(mContext, warning.getString("text"), Toast.LENGTH_LONG).show();
+            }
 
             // Get Foursquare groups and iterate over it
             JSONArray groups = response.getJSONArray("groups");
@@ -64,6 +65,9 @@ public class FoursquareParser {
 
                     // Get venue id
                     mFoursquareModel.setId(venue.getString("id"));
+
+                    // get venue name
+                    mFoursquareModel.setName(venue.getString("name"));
 
                     // Get location details
                     JSONObject location = venue.getJSONObject("location");
@@ -97,7 +101,6 @@ public class FoursquareParser {
 
                     // Add item to list
                     mFoursquareModels.add(mFoursquareModel);
-
                 }
             }
 

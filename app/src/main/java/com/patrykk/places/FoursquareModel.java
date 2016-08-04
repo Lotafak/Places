@@ -4,7 +4,7 @@ package com.patrykk.places;
  * Model for Foursquare data
  */
 public class FoursquareModel {
-    private String name,city,address,country,category_id, id;
+    private String name,city,address,country,category_id, id, fullAddress;
     private Double latitude, longitude;
 
     public String getCategory_id() {
@@ -69,5 +69,9 @@ public class FoursquareModel {
 
     public void setLatitude(Double latitude) {
         this.latitude = latitude;
+    }
+
+    public String getFullAddress() {
+        return address + ", " + city;
     }
 }

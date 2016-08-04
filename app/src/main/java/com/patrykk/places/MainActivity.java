@@ -15,15 +15,16 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -46,18 +47,21 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.ArrayList;
 import java.util.Locale;
 
 /**
  * MainActivity is the Main Window of the app, here we have Google Maps, Foursquare search and result,
- * toolbar for logging out and for choosing location source.
+ * toolbar for logging out, for choosing location source and choosing foursquare venues category.
  */
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback,
         ChooseLocationDialog.OnLocationChosenListener,
         GoogleApiClient.OnConnectionFailedListener,
-        ChooseCategoryDialog.OnCategoryChosenListener{
+        ChooseCategoryDialog.OnCategoryChosenListener,
+        FoursquareRequest.OnRequestProcessedListener{
 
     private GoogleMap mMap;
+    private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
     private String mActivityTitle;
@@ -101,11 +105,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
      * Initialize Drawer Layout List, adding items, handling drawer open/closed states
      */
     private void initializeDrawerList() {
-        mDrawerList = (ListView) findViewById(R.id.navigationList);
+        mDrawerList = (ListView) findViewById(R.id.places_list);
 
-//        addDrawerItems();
-
-        DrawerLayout mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mActivityTitle = getTitle().toString();
 
         try {
@@ -116,7 +118,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             Toast.makeText(MainActivity.this, "Oops, something went wrong!", Toast.LENGTH_SHORT).show();
             finishAffinity();
         }
-
 
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
                 R.string.drawer_open, R.string.drawer_close) {
@@ -138,18 +139,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         mDrawerToggle.setDrawerIndicatorEnabled(true);
         mDrawerLayout.addDrawerListener(mDrawerToggle);
-    }
-
-
-    /**
-     * Adding a few sample items for Drawer Layout list
-     */
-    private void addDrawerItems() {
-        String[] sampleArray = {"Item1", "Item2", "Item3", "Item4", "Item5"};
-        ArrayAdapter<String> mAdapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_list_item_1,
-                sampleArray);
-        mDrawerList.setAdapter(mAdapter);
     }
 
     @Override
@@ -246,6 +235,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     /**
+     * Set {@link DrawerLayout} list to {@link FoursquareRequest} parsed response
+     *
+     * @param list list of venues (places) obtained from Foursquare API
+     */
+    @Override
+    public void onResponseReady(ArrayList<FoursquareModel> list) {
+        DrawerLayoutAdapter adapter = new DrawerLayoutAdapter(this, list);
+        mDrawerList.setAdapter(adapter);
+        mDrawerLayout.openDrawer(GravityCompat.START);
+    }
+
+    /**
      * Handles {@link GoogleApiClient} callback to logs out user from Google services and
      * sends user to LoginActivity. Sets by
      * {@link #createAndConnectToGoogleApiClient(GoogleApiClient.ConnectionCallbacks)}
@@ -333,7 +334,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .enableAutoManage(this, this)
                 .addApi(LocationServices.API)
                 .addApi(Auth.GOOGLE_SIGN_IN_API)
-                .addConnectionCallbacks(callback)   // sets
+                .addConnectionCallbacks(callback)   // sets callback from parameter
                 .build();
         mGoogleApiClient.connect();
     }
@@ -345,8 +346,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private class LastKnownLocationCallbackHandler implements GoogleApiClient.ConnectionCallbacks {
         @Override
         public void onConnected(@Nullable Bundle bundle) {
-            Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
-                    mGoogleApiClient);
+            Location mLastLocation = LocationServices
+                    .FusedLocationApi
+                    .getLastLocation(mGoogleApiClient);
             if (mLastLocation != null) {
                 setLocation(LocalizationConverter.ToAddress(mLastLocation, MainActivity.this));
             }
@@ -369,7 +371,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    Constants.PERMISSION_REQUEST_LOCATION_CODE);
+                    Constants.REQUEST_PERMISSION_LOCATION_CODE);
             return;
         }
         if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
@@ -405,7 +407,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if (requestCode == Constants.PERMISSION_REQUEST_LOCATION_CODE) {
+        if (requestCode == Constants.REQUEST_PERMISSION_LOCATION_CODE) {
 
             if (permissions.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(MainActivity.this, "Access granted", Toast.LENGTH_SHORT).show();

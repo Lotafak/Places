@@ -13,7 +13,7 @@
         tools:context=".MainActivity">
     </fragment>
     <ListView
-        android:id="@+id/navigationList"
+        android:id="@+id/places_list"
         android:layout_width="300dp"
         android:layout_height="match_parent"
         android:layout_gravity="left|start"

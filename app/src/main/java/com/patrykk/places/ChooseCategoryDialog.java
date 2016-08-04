@@ -27,6 +27,8 @@ public class ChooseCategoryDialog extends DialogFragment implements AdapterView.
 
     ListView mListView;
 
+    private OnCategoryChosenListener mListener;
+
     /**
      * Default non-parametric constructor required by DialogFragment base class
      */
@@ -87,6 +89,4 @@ public class ChooseCategoryDialog extends DialogFragment implements AdapterView.
     public interface OnCategoryChosenListener {
         void onCategoryChosen(String category);
     }
-
-    private OnCategoryChosenListener mListener;
 }

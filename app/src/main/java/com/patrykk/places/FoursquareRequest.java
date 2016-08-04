@@ -22,12 +22,24 @@ import java.util.ArrayList;
 public class FoursquareRequest extends android.support.v4.app.Fragment {
 
     private Context mContext;
+
     private RequestQueue mRequestQueue;
+
     private String mUrl = "https://api.foursquare.com/v2/venues/explore?";
+
+    public OnRequestProcessedListener mListener;
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+
+        try {
+            // If activity implements interface assign it to listener
+            this.mListener = (OnRequestProcessedListener) context;
+        } catch (final ClassCastException e) {
+            throw new ClassCastException(context.toString()
+                    + " must implement OnRequestProcessedListener interface");
+        }
 
         mContext = context;
     }
@@ -79,9 +91,16 @@ public class FoursquareRequest extends android.support.v4.app.Fragment {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
+                        // Create response parses object
                         FoursquareParser foursquareParser = new FoursquareParser(mContext);
+
+
+                        // Parse response and assign result to array
                         ArrayList<FoursquareModel> foursquareModels = foursquareParser.ParseJSONObjectFoursquareExploreResponse(response);
-                        // TODO: Do something with recieved data
+
+                        // Call handler method
+                        if(foursquareModels != null)
+                            FoursquareRequest.this.mListener.onResponseReady(foursquareModels);
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -117,7 +136,7 @@ public class FoursquareRequest extends android.support.v4.app.Fragment {
         String newUrl = "";
 
         // Adding default parameters to url
-        newUrl += "&limit=2&sortByDistance=1&v=20160802";
+        newUrl += "&limit=30&sortByDistance=1&v=20160802";
 
         // Obtaining parameters from passed bundle
         String latLng = parameters.getString(Constants.FOURSQUARE_REQUEST_LATLNG, "");
@@ -130,5 +149,9 @@ public class FoursquareRequest extends android.support.v4.app.Fragment {
             newUrl += "&section=" + category;
 
         return mUrl.concat(newUrl);
+    }
+
+    public interface OnRequestProcessedListener{
+        void onResponseReady(ArrayList<FoursquareModel> list);
     }
 }
