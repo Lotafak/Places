@@ -7,7 +7,12 @@ public class Constants {
     /**
      * Basic log tag
      */
-    public static final String LOG_TAG = "LOG_TAG";
+    public static final String LOG_TAG = "log_tag";
+
+    /**
+     * Tag for volley image request
+     */
+    public static final String IMAGE_REQUEST_LOG_TAG = "image_requst_log_tag";
 
     /**
      * Key for intents extra login type
@@ -86,7 +91,22 @@ public class Constants {
     public static final String FOURSQUARE_REQUEST_LATLNG = "foursquare_request_latlong";
 
     /**
-     * Teg for making foursquare request
+     * Tag for making foursquare venue request
      */
-    public static final String FOURSQUARE_REQUEST = "foursquare_request";
+    public static final String FOURSQUARE_VENUE_REQUEST = "foursquare_venue_request";
+
+    /**
+     * Tag for making foursquare categories request
+     */
+    public static final String FOURSQUARE_CATEGORIES_REQUEST = "foursquare_categories_request";
+
+    /**
+     * Log out button position in option menu
+     */
+    public static final int LOG_OUT_BUTTON_POSITION = 2;
+
+    /**
+     * Facebook location item position on location list in dialog
+     */
+    public static final int FACEBOOK_LOCATION_LIST_POSITION = 2;
 }

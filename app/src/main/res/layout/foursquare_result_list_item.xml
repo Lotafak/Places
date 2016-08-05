@@ -4,7 +4,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <ImageView
+    <com.android.volley.toolbox.NetworkImageView
+        android:adjustViewBounds="true"
         android:id="@+id/foursquare_icon"
         android:layout_width="64dp"
         android:layout_height="64dp"

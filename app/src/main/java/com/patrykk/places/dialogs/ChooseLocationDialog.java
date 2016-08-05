@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.facebook.AccessToken;
 import com.patrykk.places.activities.MainActivity;
@@ -45,13 +46,8 @@ public class ChooseLocationDialog extends android.support.v4.app.DialogFragment 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mItemsKeys = new ArrayList<>(Arrays.asList(Constants.LOCATION_DEVICE, Constants.LOCATION_GPS));
-        mItemsValues = new ArrayList<>(Arrays.asList("Last device location", "GPS Location"));
-
-        if (AccessToken.getCurrentAccessToken() != null) {
-            mItemsKeys.add(Constants.LOCATION_FACEBOOK);
-            mItemsValues.add("Facebook location");
-        }
+        mItemsKeys = new ArrayList<>(Arrays.asList(Constants.LOCATION_DEVICE, Constants.LOCATION_GPS, Constants.LOCATION_FACEBOOK));
+        mItemsValues = new ArrayList<>(Arrays.asList("Last device location", "GPS Location", "Facebook location"));
     }
 
     /**
@@ -84,8 +80,14 @@ public class ChooseLocationDialog extends android.support.v4.app.DialogFragment 
      */
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-        dismiss();
-        this.mListener.onLocationChosen(mItemsKeys.get(i));
+
+        // If user logged in with Google account using facebook location is disabled
+        if(AccessToken.getCurrentAccessToken() == null && i == Constants.FACEBOOK_LOCATION_LIST_POSITION){
+            Toast.makeText(getActivity(), "In order to use Facebook location log in with Facebook account", Toast.LENGTH_LONG).show();
+        }else{
+            dismiss();
+            this.mListener.onLocationChosen(mItemsKeys.get(i));
+        }
     }
 
     /**

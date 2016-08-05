@@ -5,7 +5,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,9 +14,10 @@ import android.widget.ListView;
 
 import com.patrykk.places.R;
 
-// TODO: Documentation
 /**
- * A simple {@link Fragment} subclass.
+ * Dialog for choosing category to filter venues.
+ * Accessible for user with first enter the application and by clicking option menu "CHOOSE LOCATION"
+ * button
  */
 public class ChooseCategoryDialog extends DialogFragment implements AdapterView.OnItemClickListener {
 
@@ -37,6 +37,9 @@ public class ChooseCategoryDialog extends DialogFragment implements AdapterView.
     public ChooseCategoryDialog() {
     }
 
+    /**
+     * Gets data from resources
+     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,6 +55,8 @@ public class ChooseCategoryDialog extends DialogFragment implements AdapterView.
         View view = inflater.inflate(R.layout.fragment_choose_dialog, container, false);
 
         mListView = (ListView) view.findViewById(R.id.list);
+
+        // Set dialogs title
         getDialog().setTitle(R.string.choose_category_dialog_title);
         return view;
     }
@@ -60,12 +65,17 @@ public class ChooseCategoryDialog extends DialogFragment implements AdapterView.
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        // Set adapter with categories values
         mListView.setAdapter(new ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_list_item_1,
                 mItemsValues));
         mListView.setOnItemClickListener(this);
     }
 
+    /**
+     * Close the dialog and fires {@link OnCategoryChosenListener} onCategoryChosen method with
+     * category key as parameter.
+     */
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
         dismiss();
@@ -86,7 +96,8 @@ public class ChooseCategoryDialog extends DialogFragment implements AdapterView.
     }
 
     /**
-     *
+     * Interface for communicating between calling activity and {@link ChooseCategoryDialog}.
+     * Sends in parameter chosen category key
      */
     public interface OnCategoryChosenListener {
         void onCategoryChosen(String category);

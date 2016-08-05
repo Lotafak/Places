@@ -3,16 +3,21 @@ package com.patrykk.places.foursquare;
 /**
  * Model for Foursquare data
  */
-public class FoursquareModel {
-    private String name,city,address,country,category_id, id, fullAddress;
+public class FoursquareVenueModel {
+    /**
+     * Indicates type of image from Foursquare API (grey, 64x64)
+     */
+    private final String IMAGE_SIZE = "bg_64";
+
+    private String name,city,address,country, categoryId, categoryUrl, id;
     private Double latitude, longitude;
 
-    public String getCategory_id() {
-        return category_id;
+    public String getCategoryId() {
+        return categoryId;
     }
 
-    public void setCategory_id(String category_id) {
-        this.category_id = category_id;
+    public void setCategoryId(String categoryId) {
+        this.categoryId = categoryId;
     }
 
     public String getName() {
@@ -73,5 +78,13 @@ public class FoursquareModel {
 
     public String getFullAddress() {
         return address + ", " + city;
+    }
+
+    public String getCategoryUrl() {
+        return categoryUrl;
+    }
+
+    public void setCategoryUrl(String prefix, String suffix) {
+        this.categoryUrl = prefix + IMAGE_SIZE + suffix;
     }
 }

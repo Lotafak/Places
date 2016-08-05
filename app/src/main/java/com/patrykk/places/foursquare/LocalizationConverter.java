@@ -52,31 +52,31 @@ public class LocalizationConverter {
     }
 
     public static Address ToAddress(Location location, Context context) {
-        ConnectivityManager cm = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        if(cm.getActiveNetworkInfo() == null ){
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm.getActiveNetworkInfo() == null) {
             Toast.makeText(context, "Warning: No internet connection! Application will provide less information about localization", Toast.LENGTH_LONG).show();
             return null;
         }
         Geocoder geocoder = new Geocoder(context);
         try {
             List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+            Address a;
 
-            if (addresses == null)
+            if (addresses == null) {
                 Toast.makeText(context, "Can't find location!", Toast.LENGTH_SHORT).show();
-            else
-                return addresses.get(0);
-
+                return null;
+            } else
+                 a = addresses.get(0);
+            return a;
         } catch (IOException e) {
             Log.e(Constants.LOG_TAG, e.toString());
             Toast.makeText(context, "Can't get location", Toast.LENGTH_SHORT).show();
             return null;
         }
-
-        return null;
     }
 
     public static String AddressToQueryString(Address address) {
-        if(address == null){
+        if (address == null) {
             Log.e(Constants.LOG_TAG, "address is null in AddressToQuesyString(Address address)");
             return "";
         }

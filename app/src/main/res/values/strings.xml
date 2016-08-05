@@ -21,6 +21,7 @@
     <string name="no_localization_message">In order to use location services you need to enable it in settings. Do you want to go to settings in order to enable localization ?</string>
     <string name="no_localization_title">Redirection</string>
     <string name="not_specified">Not specified</string>
+    <string name="categories_cache_file_name">categories.json</string>
     <string-array name="category_keys">
         <item>food</item>
         <item>drinks</item>
