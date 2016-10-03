@@ -18,10 +18,12 @@
     <string name="log_out_button_title">"Log out from "</string>
     <string name="yes">yes</string>
     <string name="no">no</string>
-    <string name="no_localization_message">In order to use location services you need to enable it in settings. Do you want to go to settings in order to enable localization ?</string>
+    <string name="no_localization_message">To use location services you need to localization in settings. Do you want to go to settings in order to enable localization ?</string>
     <string name="no_localization_title">Redirection</string>
     <string name="not_specified">Not specified</string>
     <string name="categories_cache_file_name">categories.json</string>
+    <string name="explore_url">https://api.foursquare.com/v2/venues/explore?</string>
+    <string name="webview_url">https://foursquare.com/v/</string>
     <string-array name="category_keys">
         <item>food</item>
         <item>drinks</item>
@@ -44,4 +46,9 @@
         <item>Trending</item>
         <item>Recommended</item>
     </string-array>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="settings_button_tittle">Settings</string>
+    <string name="venues_limit">Venues limit</string>
 </resources>

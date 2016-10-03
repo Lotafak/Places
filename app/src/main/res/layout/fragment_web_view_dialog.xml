@@ -1,0 +1,26 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.patrykk.places.dialogs.WebViewDialog"
+    android:measureAllChildren="true"
+    android:layout_marginTop="0dp"
+    android:paddingTop="0dp">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <ProgressBar android:id="@+id/pB1"
+            style="?android:attr/progressBarStyleHorizontal" android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:padding="2dip">
+        </ProgressBar>
+        <WebView
+            android:id="@+id/web_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:foregroundGravity="bottom"
+            android:layout_margin="0dp"
+            android:padding="0dp"/>
+    </LinearLayout>
+</FrameLayout>

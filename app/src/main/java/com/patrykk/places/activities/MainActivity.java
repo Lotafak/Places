@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.location.Address;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -21,9 +22,9 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -54,9 +55,11 @@ import com.patrykk.places.adapters.DrawerLayoutAdapter;
 import com.patrykk.places.constants.Constants;
 import com.patrykk.places.dialogs.ChooseCategoryDialog;
 import com.patrykk.places.dialogs.ChooseLocationDialog;
+import com.patrykk.places.dialogs.WebViewDialog;
 import com.patrykk.places.foursquare.FoursquareRequest;
 import com.patrykk.places.foursquare.FoursquareVenueModel;
 import com.patrykk.places.foursquare.LocalizationConverter;
+import com.patrykk.places.parsers.FoursuareVenueUrlPareser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -70,7 +73,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         ChooseLocationDialog.OnLocationChosenListener,
         GoogleApiClient.OnConnectionFailedListener,
         ChooseCategoryDialog.OnCategoryChosenListener,
-        FoursquareRequest.OnRequestProcessedListener {
+        FoursquareRequest.OnRequestProcessedListener
+        , GoogleMap.OnMarkerClickListener {
 
     private GoogleMap mMap;
     private DrawerLayout mDrawerLayout;
@@ -85,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private ArrayList<FoursquareVenueModel> mVenuesList;
 
-    private HashMap<String, Marker> mMarkerMap;
+    private HashMap<String, Object> mMarkerMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -184,7 +188,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
      * Creates GoogleApiClient object with connection to both Google Sign in and Location services
      * Google documentation says that connecting to services again in each activity separately is
      * lightweight operation and it's recommended to handle it like this
-     *
+     * <p>
      * {@param callback callback handler}
      */
     private void createAndConnectToGoogleApiClient(GoogleApiClient.ConnectionCallbacks callback) {
@@ -192,6 +196,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             callback.onConnected(null);
             return;
         }
+
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
                 .addApi(LocationServices.API)
@@ -199,6 +204,34 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .addConnectionCallbacks(callback)   // sets callback from parameter
                 .build();
         mGoogleApiClient.connect();
+    }
+
+    /**
+     * Method invoked when Google Maps marker is clicked.
+     * Opens {@link WebViewDialog}
+     *
+     * @param marker target marker
+     * @return true if the listener has consumed the event (i.e., the default behavior should
+     * not occur), false otherwise (i.e., the default behavior should occur). The default behavior
+     * is for the camera to move to the marker and an info window to appear. (Taken from original
+     * doc). Always return false, because default behaviour should occur anyway.
+     */
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+
+        String url;
+        String title = marker.getTitle();
+
+        for (FoursquareVenueModel mdl : mVenuesList) {
+            if (mdl.getName().equals(title)) {
+                url = FoursuareVenueUrlPareser.makeUrl(title, mdl.getId());
+                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+                WebViewDialog wvd = WebViewDialog.newInstance(url);
+                wvd.show(ft, Constants.WEB_VIEW_DIALOG_TAG);
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -293,15 +326,42 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Calling for gps last known location. Can
         @SuppressWarnings("MissingPermission") Location location = locationManager
                 .getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        mAddress = LocalizationConverter.ToAddress(location, this);
-        if (mAddress != null)
-            setLocation(mAddress);
-        else {
-            Address noGeocoderAddress = new Address(Locale.getDefault());
-            noGeocoderAddress.setLatitude(location.getLatitude());
-            noGeocoderAddress.setLongitude(location.getLongitude());
-            setLocation(noGeocoderAddress);
+        if (location != null) {
+            mAddress = LocalizationConverter.ToAddress(location, this);
+
+            if (mAddress != null)
+                setLocation(mAddress);
+            else {
+                Address noGeocoderAddress = new Address(Locale.getDefault());
+                noGeocoderAddress.setLatitude(location.getLatitude());
+                noGeocoderAddress.setLongitude(location.getLongitude());
+                setLocation(noGeocoderAddress);
+            }
+        } else {
+            //noinspection MissingPermission
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, new LocationListener() {
+                @Override
+                public void onLocationChanged(Location location) {
+                    setLocation(LocalizationConverter.ToAddress(location, MainActivity.this));
+                }
+
+                @Override
+                public void onStatusChanged(String s, int i, Bundle bundle) {
+
+                }
+
+                @Override
+                public void onProviderEnabled(String s) {
+
+                }
+
+                @Override
+                public void onProviderDisabled(String s) {
+
+                }
+            });
         }
+
     }
 
     /**
@@ -405,6 +465,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.setOnMarkerClickListener(this);
     }
 
     /**
@@ -426,7 +487,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //                adapterView.setSelected(true);
 
                 // Gets corresponding marker
-                Marker m = mMarkerMap.get(mVenuesList.get(i).getId());
+                Marker m = (Marker) mMarkerMap.get(mVenuesList.get(i).getId());
 
                 // Show info (bar above marker)
                 m.showInfoWindow();
@@ -511,12 +572,25 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 logOut();
                 return true;
 
+            case R.id.settings_button:
+                goToSettingsActivity();
+                return true;
+
             case R.id.change_category_button:
                 showCategoryDialog();
 
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    /**
+     * Sends user to Settings activity
+     */
+    private void goToSettingsActivity() {
+        Intent intent = new Intent();
+        intent.setClass(getApplicationContext(), SettingsActivity.class);
+        startActivity(intent);
     }
 
     /**
@@ -643,6 +717,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .position(new LatLng(mAddress.getLatitude(), mAddress.getLongitude()))
                 .title(formatAddress(mAddress)));
 
+        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+            @Override
+            public void onInfoWindowClick(Marker marker) {
+                onMarkerClick(marker);
+            }
+        });
+
         if (mMarkerMap != null)
             mMarkerMap.clear();
         else
@@ -659,6 +740,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
 
             mMarkerMap.put(fm.getId(), m);
+//            mMarkerMap.put(Constants.MARKER_VENUE_NAME, fm.getName());
         }
     }
 
@@ -715,12 +797,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
      */
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
+
         super.onConfigurationChanged(newConfig);
         mDrawerToggle.onConfigurationChanged(newConfig);
     }
 
     /**
-     * If drawer layout is opened then back button close it. If not back button works as default
+     * If drawer layout is opened then back button close it. If not, back button works as default
      */
     @Override
     public void onBackPressed() {
@@ -729,5 +812,28 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         } else {
             super.onBackPressed();
         }
+    }
+
+    /**
+     * Method is called when there were called configuration changed (in this case orientation change).
+     * Method is saving current user address.
+     *
+     * @param outState keeps address for {@link #onRestoreInstanceState(Bundle)} to restore it.
+     */
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable("address", mAddress);
+    }
+
+    /**
+     * Restore address from Bundle
+     *
+     * @param savedInstanceState data saved by {@link #onSaveInstanceState(Bundle)}
+     */
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        mAddress = savedInstanceState.getParcelable("address");
     }
 }

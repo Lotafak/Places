@@ -1,6 +1,7 @@
 package com.patrykk.places.foursquare;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,8 +25,10 @@ import org.json.JSONObject;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Properties;
 
 public class FoursquareRequest extends android.support.v4.app.Fragment {
 
@@ -34,7 +37,7 @@ public class FoursquareRequest extends android.support.v4.app.Fragment {
     private RequestQueue mRequestQueue;
 
     // Foursquare venues explorer API endpoint
-    private final String mExploreUrl = "https://api.foursquare.com/v2/venues/explore?";
+    private String mExploreUrl;
 
     // Foursquare venues explorer API endpoint
 //    private final String mCategoriesUrl = "https://api.foursquare.com/v2/venues/categories?";
@@ -63,6 +66,7 @@ public class FoursquareRequest extends android.support.v4.app.Fragment {
         }
 
         mContext = context;
+        mExploreUrl = mContext.getResources().getString(R.string.explore_url);
     }
 
     @Override
@@ -230,8 +234,10 @@ public class FoursquareRequest extends android.support.v4.app.Fragment {
     private String addParameters(Bundle parameters, String url) {
         String parametersQuery = "";
 
+        // Adding limit parameter from settings file
+        parametersQuery += "&limit=" + getConfigValue(mContext, Constants.VENUES_LIMIT);
         // Adding default parameters to url
-        parametersQuery += "&limit=30&sortByDistance=1";
+        parametersQuery += "&sortByDistance=1";
         parametersQuery += mVersion;
 
         // Obtaining parameters from passed bundle
@@ -259,5 +265,21 @@ public class FoursquareRequest extends android.support.v4.app.Fragment {
         void onVenuesResponseReady(ArrayList<FoursquareVenueModel> list);
 
 //        void onCategoriesResponseReady(ArrayList<FoursquareCategoryModel> list);
+    }
+
+    public static String getConfigValue(Context context, String name){
+        Resources res = context.getResources();
+
+        try{
+            InputStream is = res.openRawResource(R.raw.config);
+            Properties prop = new Properties();
+            prop.load(is);
+            return prop.getProperty(name);
+        } catch (Resources.NotFoundException e) {
+            Log.e("getConfigValue", "Resource file not found: " + e.getMessage());
+        } catch (IOException e ){
+            Log.e("getConfigValue", "Failed to open config file: " + e.getMessage());
+        }
+        return null;
     }
 }

@@ -103,10 +103,18 @@ public class Constants {
     /**
      * Log out button position in option menu
      */
-    public static final int LOG_OUT_BUTTON_POSITION = 2;
+    public static final int LOG_OUT_BUTTON_POSITION = 3;
 
     /**
      * Facebook location item position on location list in dialog
      */
     public static final int FACEBOOK_LOCATION_LIST_POSITION = 2;
+
+    public static final String MARKER_VENUE_NAME = "marker_venue_name";
+
+    public static final String VENUE_URL = "https://foursquare.com/v/";
+
+    public static final String WEB_VIEW_DIALOG_TAG = "WEB_VIEW_DIALOG";
+
+    public static final String VENUES_LIMIT = "venues_limit";
 }

@@ -14,6 +14,10 @@
         android:title="@string/change_localization_button_title"
         app:showAsAction="never"/>
     <item
+        android:id="@+id/settings_button"
+        android:title="@string/settings_button_tittle"
+        app:showAsAction="never"/>
+    <item
         android:id="@+id/logout_button"
         android:title="@string/log_out"
         app:showAsAction="never"/>
